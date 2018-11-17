@@ -135,6 +135,34 @@ func TestRange(t *testing.T) {
 	om.Range(rangeFunc(t, keys))
 }
 
+func TestDeleteOverRange(t *testing.T) {
+	var om ordered.Map
+	numKeys := 10
+	for i := 0; i < numKeys; i++ {
+		om.Store(i, nil)
+	}
+
+	keyFuncCounter := func(counter *int) func(k, v interface{}) bool {
+		*counter = 0
+		return func(k, v interface{}) bool {
+			*counter++
+			om.Delete(k)
+			return true
+		}
+	}
+
+	var counter int
+	om.Range(keyFuncCounter(&counter))
+	if counter != numKeys {
+		t.Errorf("Expected iteration of %d keys, got %d", numKeys, counter)
+	}
+
+	om.Range(keyFuncCounter(&counter))
+	if counter != 0 {
+		t.Errorf("Expected iteration of 0 keys, got %d", counter)
+	}
+}
+
 func BenchmarkMap(b *testing.B) {
 	var sm sync.Map
 	var om ordered.Map

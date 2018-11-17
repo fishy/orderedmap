@@ -99,8 +99,11 @@ func (m *Map) LoadOrStore(key, value interface{}) (actual interface{}, loaded bo
 //
 // The order of the iteration preserves the original insertion order.
 func (m *Map) Range(f func(key, value interface{}) bool) {
-	for e := m.l.Front(); e != nil; e = e.Next() {
+	for e := m.l.Front(); e != nil; {
 		kv := e.Value.(pair)
+		// Do it here instead of in for line to handle the special case of caller
+		// deleting the key in f
+		e = e.Next()
 		if !f(kv.Key, kv.Value) {
 			break
 		}
