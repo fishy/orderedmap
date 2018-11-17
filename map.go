@@ -39,7 +39,7 @@ func (m *Map) getElement(key interface{}) *list.Element {
 //
 // key must be hashable.
 func (m *Map) Store(key, value interface{}) {
-	kv := pair{key, value}
+	kv := &pair{key, value}
 	element := m.getElement(key)
 	if element != nil {
 		// update existing value.
@@ -61,7 +61,7 @@ func (m *Map) Load(key interface{}) (value interface{}, ok bool) {
 	if element == nil {
 		return nil, false
 	}
-	kv := element.Value.(pair)
+	kv := element.Value.(*pair)
 	return kv.Value, true
 }
 
@@ -85,10 +85,10 @@ func (m *Map) Delete(key interface{}) {
 func (m *Map) LoadOrStore(key, value interface{}) (actual interface{}, loaded bool) {
 	element := m.getElement(key)
 	if element != nil {
-		kv := element.Value.(pair)
+		kv := element.Value.(*pair)
 		return kv.Value, true
 	}
-	kv := pair{key, value}
+	kv := &pair{key, value}
 	element = m.l.PushBack(kv)
 	m.m.Store(key, element)
 	return value, false
@@ -100,7 +100,7 @@ func (m *Map) LoadOrStore(key, value interface{}) (actual interface{}, loaded bo
 // The order of the iteration preserves the original insertion order.
 func (m *Map) Range(f func(key, value interface{}) bool) {
 	for e := m.l.Front(); e != nil; {
-		kv := e.Value.(pair)
+		kv := e.Value.(*pair)
 		// Do it here instead of in for line to handle the special case of caller
 		// deleting the key in f
 		e = e.Next()
