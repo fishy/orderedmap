@@ -53,3 +53,7 @@ ok      github.com/fishy/orderedmap     44.991s
 
 As you can see, all operations except `Range` are on-par or only slightly slower
 than `sync.Map`, while `Range` is a lot faster.
+
+## License
+
+[BSD License](https://github.com/fishy/orderedmap/blob/master/LICENSE).
