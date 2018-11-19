@@ -10,8 +10,6 @@ import (
 	ordered "github.com/fishy/orderedmap"
 )
 
-var sizes = []int{10, 100, 1000}
-
 func TestMap(t *testing.T) {
 	var om ordered.Map
 
@@ -163,9 +161,58 @@ func TestDeleteOverRange(t *testing.T) {
 	}
 }
 
+/*
+ * Benchmarks
+ */
+
+var sizes = []int{10, 100, 1000}
+
+// builtin is a simple wrapper around builtin map to satisify Interface.
+type builtin struct {
+	m map[interface{}]interface{}
+}
+
+var _ ordered.Interface = (*builtin)(nil)
+
+func newMap() *builtin {
+	return &builtin{
+		m: make(map[interface{}]interface{}),
+	}
+}
+
+func (m *builtin) Delete(key interface{}) {
+	delete(m.m, key)
+}
+
+func (m *builtin) Load(key interface{}) (value interface{}, ok bool) {
+	value, ok = m.m[key]
+	return
+}
+
+func (m *builtin) LoadOrStore(key, value interface{}) (actual interface{}, loaded bool) {
+	if v, ok := m.m[key]; ok {
+		return v, true
+	}
+	m.m[key] = value
+	return value, false
+}
+
+func (m *builtin) Range(f func(key, value interface{}) bool) {
+	for key, value := range m.m {
+		if !f(key, value) {
+			break
+		}
+	}
+}
+
+func (m *builtin) Store(key, value interface{}) {
+	m.m[key] = value
+}
+
 func BenchmarkMap(b *testing.B) {
 	var sm sync.Map
 	var om ordered.Map
+	m := newMap()
 
 	key1 := "key1"
 	value1 := "value1"
@@ -177,6 +224,14 @@ func BenchmarkMap(b *testing.B) {
 	b.Run(
 		"DeleteEmpty",
 		func(b *testing.B) {
+			b.Run(
+				"builtin",
+				func(b *testing.B) {
+					for i := 0; i < b.N; i++ {
+						m.Delete(key1)
+					}
+				},
+			)
 			b.Run(
 				"sync",
 				func(b *testing.B) {
@@ -200,6 +255,14 @@ func BenchmarkMap(b *testing.B) {
 		"LoadEmpty",
 		func(b *testing.B) {
 			b.Run(
+				"builtin",
+				func(b *testing.B) {
+					for i := 0; i < b.N; i++ {
+						m.Load(key1)
+					}
+				},
+			)
+			b.Run(
 				"sync",
 				func(b *testing.B) {
 					for i := 0; i < b.N; i++ {
@@ -221,6 +284,14 @@ func BenchmarkMap(b *testing.B) {
 	b.Run(
 		"Store1",
 		func(b *testing.B) {
+			b.Run(
+				"builtin",
+				func(b *testing.B) {
+					for i := 0; i < b.N; i++ {
+						m.Store(key1, value1)
+					}
+				},
+			)
 			b.Run(
 				"sync",
 				func(b *testing.B) {
@@ -244,6 +315,14 @@ func BenchmarkMap(b *testing.B) {
 		"Store2",
 		func(b *testing.B) {
 			b.Run(
+				"builtin",
+				func(b *testing.B) {
+					for i := 0; i < b.N; i++ {
+						m.Store(key2, value2)
+					}
+				},
+			)
+			b.Run(
 				"sync",
 				func(b *testing.B) {
 					for i := 0; i < b.N; i++ {
@@ -265,6 +344,14 @@ func BenchmarkMap(b *testing.B) {
 	b.Run(
 		"Update1",
 		func(b *testing.B) {
+			b.Run(
+				"builtin",
+				func(b *testing.B) {
+					for i := 0; i < b.N; i++ {
+						m.Store(key1, value1b)
+					}
+				},
+			)
 			b.Run(
 				"sync",
 				func(b *testing.B) {
@@ -288,6 +375,14 @@ func BenchmarkMap(b *testing.B) {
 		"Load1",
 		func(b *testing.B) {
 			b.Run(
+				"builtin",
+				func(b *testing.B) {
+					for i := 0; i < b.N; i++ {
+						m.Load(key1)
+					}
+				},
+			)
+			b.Run(
 				"sync",
 				func(b *testing.B) {
 					for i := 0; i < b.N; i++ {
@@ -309,6 +404,14 @@ func BenchmarkMap(b *testing.B) {
 	b.Run(
 		"Load3",
 		func(b *testing.B) {
+			b.Run(
+				"builtin",
+				func(b *testing.B) {
+					for i := 0; i < b.N; i++ {
+						m.Load(key3)
+					}
+				},
+			)
 			b.Run(
 				"sync",
 				func(b *testing.B) {
@@ -332,6 +435,16 @@ func BenchmarkMap(b *testing.B) {
 func BenchmarkLoadOrStoreStore(b *testing.B) {
 	key := "key"
 	value := "value"
+
+	b.Run(
+		"builtin",
+		func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				m := newMap()
+				m.LoadOrStore(key, value)
+			}
+		},
+	)
 
 	b.Run(
 		"sync",
@@ -358,6 +471,18 @@ func BenchmarkLoadOrStoreLoad(b *testing.B) {
 	key := "key"
 	value1 := "value1"
 	value2 := "value2"
+
+	b.Run(
+		"builtin",
+		func(b *testing.B) {
+			m := newMap()
+			m.LoadOrStore(key, value1)
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				m.LoadOrStore(key, value2)
+			}
+		},
+	)
 
 	b.Run(
 		"sync",
@@ -387,6 +512,18 @@ func BenchmarkLoadOrStoreLoad(b *testing.B) {
 func BenchmarkStoreThenDelete(b *testing.B) {
 	key := "key"
 	value := "value"
+
+	b.Run(
+		"builtin",
+		func(b *testing.B) {
+			m := newMap()
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				m.Store(key, value)
+				m.Delete(key)
+			}
+		},
+	)
 
 	b.Run(
 		"sync",
@@ -434,13 +571,24 @@ func BenchmarkRange(b *testing.B) {
 			func(b *testing.B) {
 				var sm sync.Map
 				var om ordered.Map
+				m := newMap()
 
 				keys := make([]string, size)
 				for i := 0; i < size; i++ {
 					keys[i] = generateKey(b)
+					m.Store(keys[i], i)
 					sm.Store(keys[i], i)
 					om.Store(keys[i], i)
 				}
+
+				b.Run(
+					"builtin",
+					func(b *testing.B) {
+						for i := 0; i < b.N; i++ {
+							m.Range(rangeFunc)
+						}
+					},
+				)
 
 				b.Run(
 					"sync",
