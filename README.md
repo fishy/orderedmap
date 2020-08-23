@@ -1,4 +1,4 @@
-[![GoDoc](https://godoc.org/github.com/fishy/orderedmap?status.svg)](https://godoc.org/github.com/fishy/orderedmap)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/fishy/orderedmap)](https://pkg.go.dev/github.com/fishy/orderedmap)
 [![Go Report Card](https://goreportcard.com/badge/github.com/fishy/orderedmap)](https://goreportcard.com/report/github.com/fishy/orderedmap)
 
 # Go OrderedMap
@@ -6,15 +6,15 @@
 An implementation of ordered map in Go.
 An ordered map preserves the original insertion order when iterating.
 
-It's implemented by wrapping a [`sync.Map`](https://godoc.org/sync#Map)
-and a [doubly linked list](https://godoc.org/container/list#List).
+It's implemented by wrapping a [`sync.Map`](https://pkg.go.dev/sync?tab=doc#Map)
+and a [doubly linked list](https://pkg.go.dev/container/list?tab=doc#List).
 The interface is intentionally kept the same with `sync.Map` to be used
 interchangeably.
 
 ## Benchmark
 
 This package comes with benchmark test to test against
-builtin map and [`sync.Map`](https://godoc.org/sync#Map):
+builtin map and [`sync.Map`](https://pkg.go.dev/sync?tab=doc#Map):
 
 ```
 $ go test -test.benchmem -bench .
