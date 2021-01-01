@@ -92,6 +92,32 @@ func TestMap(t *testing.T) {
 			}
 		},
 	)
+
+	t.Run(
+		"LoadAndDelete2",
+		func(t *testing.T) {
+			v, loaded := om.LoadAndDelete(key2)
+			if v != value2 {
+				t.Errorf("Loaded value expected %v, got %v", value2, v)
+			}
+			if !loaded {
+				t.Errorf("Loaded expected true, got %v", loaded)
+			}
+		},
+	)
+
+	t.Run(
+		"LoadAndDelete2Again",
+		func(t *testing.T) {
+			v, loaded := om.LoadAndDelete(key2)
+			if v != nil {
+				t.Errorf("Loaded value expected nil, got %v", v)
+			}
+			if loaded {
+				t.Errorf("Loaded expected false, got %v", loaded)
+			}
+		},
+	)
 }
 
 func TestRange(t *testing.T) {
@@ -186,6 +212,12 @@ func (m *builtin) Delete(key interface{}) {
 
 func (m *builtin) Load(key interface{}) (value interface{}, ok bool) {
 	value, ok = m.m[key]
+	return
+}
+
+func (m *builtin) LoadAndDelete(key interface{}) (value interface{}, ok bool) {
+	value, ok = m.m[key]
+	delete(m.m, key)
 	return
 }
 

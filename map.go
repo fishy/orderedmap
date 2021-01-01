@@ -69,12 +69,24 @@ func (m *Map) Load(key interface{}) (value interface{}, ok bool) {
 //
 // key must be hashable.
 func (m *Map) Delete(key interface{}) {
-	element := m.getElement(key)
-	if element == nil {
+	value, loaded := m.m.LoadAndDelete(key)
+	if !loaded {
 		return
 	}
+	m.l.Remove(value.(*list.Element))
+}
+
+// LoadAndDelete deletes the value for a key,
+// returning the previous value if any.
+// The loaded result reports whether the key was present.
+func (m *Map) LoadAndDelete(key interface{}) (value interface{}, loaded bool) {
+	value, loaded = m.m.LoadAndDelete(key)
+	if !loaded {
+		return
+	}
+	element := value.(*list.Element)
 	m.l.Remove(element)
-	m.m.Delete(key)
+	return element.Value.(*pair).Value, true
 }
 
 // LoadOrStore returns the existing value for the key if present.

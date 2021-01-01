@@ -13,6 +13,7 @@ var (
 type Interface interface {
 	Delete(key interface{})
 	Load(key interface{}) (value interface{}, ok bool)
+	LoadAndDelete(key interface{}) (value interface{}, loaded bool)
 	LoadOrStore(key, value interface{}) (actual interface{}, loaded bool)
 	Range(f func(key, value interface{}) bool)
 	Store(key, value interface{})
