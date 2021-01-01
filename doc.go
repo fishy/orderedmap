@@ -6,4 +6,4 @@
 // that doesn't change its iteration order.
 // But if a key was deleted then later inserted again,
 // the iteration order reflects its last insertion order.
-package orderedmap
+package orderedmap // import "go.yhsif.com/orderedmap"

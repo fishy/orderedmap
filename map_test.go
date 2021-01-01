@@ -7,7 +7,7 @@ import (
 	"sync"
 	"testing"
 
-	ordered "github.com/fishy/orderedmap"
+	ordered "go.yhsif.com/orderedmap"
 )
 
 func TestMap(t *testing.T) {

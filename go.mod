@@ -1,3 +1,3 @@
-module github.com/fishy/orderedmap
+module go.yhsif.com/orderedmap
 
 go 1.15

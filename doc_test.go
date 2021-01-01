@@ -3,7 +3,7 @@ package orderedmap_test
 import (
 	"fmt"
 
-	"github.com/fishy/orderedmap"
+	"go.yhsif.com/orderedmap"
 )
 
 func Example() {
