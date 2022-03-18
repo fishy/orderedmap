@@ -11,7 +11,7 @@ import (
 )
 
 func TestMap(t *testing.T) {
-	var om ordered.Map
+	var om ordered.Map[string, string]
 
 	key1 := "key1"
 	value1 := "value1"
@@ -22,102 +22,81 @@ func TestMap(t *testing.T) {
 	value3 := "value3"
 	value3b := "value3b"
 
-	t.Run(
-		"LoadEmpty",
-		func(t *testing.T) {
-			v, ok := om.Load(key1)
-			if v != nil {
-				t.Errorf("Load value expected nil, got %v", v)
-			}
-			if ok {
-				t.Errorf("Load ok expected false, got %v", ok)
-			}
-		},
-	)
+	t.Run("LoadEmpty", func(t *testing.T) {
+		v, ok := om.Load(key1)
+		if v != "" {
+			t.Errorf("Load value expected empty string, got %q", v)
+		}
+		if ok {
+			t.Errorf("Load ok expected false, got %v", ok)
+		}
+	})
 
 	om.Store(key1, value1)
 	om.Store(key2, value2)
 	om.Store(key1, value1b)
 
-	t.Run(
-		"Load1",
-		func(t *testing.T) {
-			v, ok := om.Load(key1)
-			if v != value1b {
-				t.Errorf("Load value expected %v, got %v", value1b, v)
-			}
-			if !ok {
-				t.Errorf("Load ok expected true, got %v", ok)
-			}
-		},
-	)
+	t.Run("Load1", func(t *testing.T) {
+		v, ok := om.Load(key1)
+		if v != value1b {
+			t.Errorf("Load value expected %q, got %q", value1b, v)
+		}
+		if !ok {
+			t.Errorf("Load ok expected true, got %v", ok)
+		}
+	})
 
-	t.Run(
-		"LoadOrStoreStore",
-		func(t *testing.T) {
-			v, loaded := om.LoadOrStore(key3, value3)
-			if v != value3 {
-				t.Errorf("Load value expected %v, got %v", value3, v)
-			}
-			if loaded {
-				t.Errorf("Load loaded expected false, got %v", loaded)
-			}
-		},
-	)
+	t.Run("LoadOrStoreStore", func(t *testing.T) {
+		v, loaded := om.LoadOrStore(key3, value3)
+		if v != value3 {
+			t.Errorf("Load value expected %q, got %q", value3, v)
+		}
+		if loaded {
+			t.Errorf("Load loaded expected false, got %v", loaded)
+		}
+	})
 
-	t.Run(
-		"LoadOrStoreLoad",
-		func(t *testing.T) {
-			v, loaded := om.LoadOrStore(key3, value3b)
-			if v != value3 {
-				t.Errorf("Load value expected %v, got %v", value3, v)
-			}
-			if !loaded {
-				t.Errorf("Load loaded expected true, got %v", loaded)
-			}
-		},
-	)
+	t.Run("LoadOrStoreLoad", func(t *testing.T) {
+		v, loaded := om.LoadOrStore(key3, value3b)
+		if v != value3 {
+			t.Errorf("Load value expected %q, got %q", value3, v)
+		}
+		if !loaded {
+			t.Errorf("Load loaded expected true, got %v", loaded)
+		}
+	})
 
 	om.Delete(key3)
 
-	t.Run(
-		"Load3",
-		func(t *testing.T) {
-			v, ok := om.Load(key3)
-			if v != nil {
-				t.Errorf("Load value expected nil, got %v", v)
-			}
-			if ok {
-				t.Errorf("Load ok expected false, got %v", ok)
-			}
-		},
-	)
+	t.Run("Load3", func(t *testing.T) {
+		v, ok := om.Load(key3)
+		if v != "" {
+			t.Errorf("Load value expected empty string, got %q", v)
+		}
+		if ok {
+			t.Errorf("Load ok expected false, got %v", ok)
+		}
+	})
 
-	t.Run(
-		"LoadAndDelete2",
-		func(t *testing.T) {
-			v, loaded := om.LoadAndDelete(key2)
-			if v != value2 {
-				t.Errorf("Loaded value expected %v, got %v", value2, v)
-			}
-			if !loaded {
-				t.Errorf("Loaded expected true, got %v", loaded)
-			}
-		},
-	)
+	t.Run("LoadAndDelete2", func(t *testing.T) {
+		v, loaded := om.LoadAndDelete(key2)
+		if v != value2 {
+			t.Errorf("Loaded value expected %q, got %q", value2, v)
+		}
+		if !loaded {
+			t.Errorf("Loaded expected true, got %v", loaded)
+		}
+	})
 
-	t.Run(
-		"LoadAndDelete2Again",
-		func(t *testing.T) {
-			v, loaded := om.LoadAndDelete(key2)
-			if v != nil {
-				t.Errorf("Loaded value expected nil, got %v", v)
-			}
-			if loaded {
-				t.Errorf("Loaded expected false, got %v", loaded)
-			}
-		},
-	)
+	t.Run("LoadAndDelete2Again", func(t *testing.T) {
+		v, loaded := om.LoadAndDelete(key2)
+		if v != "" {
+			t.Errorf("Loaded value expected empty string, got %q", v)
+		}
+		if loaded {
+			t.Errorf("Loaded expected false, got %v", loaded)
+		}
+	})
 }
 
 func TestRange(t *testing.T) {
@@ -132,23 +111,22 @@ func TestRange(t *testing.T) {
 		return hex.EncodeToString(p)
 	}
 	rangeIndex := 0
-	rangeFunc := func(t *testing.T, keys []string) func(k, v interface{}) bool {
+	rangeFunc := func(t *testing.T, keys []string) func(k string, v int) bool {
 		t.Helper()
-		return func(k, v interface{}) bool {
-			i := v.(int)
-			if i != rangeIndex {
-				t.Errorf("Expected value %d, got %d", rangeIndex, i)
+		return func(k string, v int) bool {
+			if v != rangeIndex {
+				t.Errorf("Expected value %d, got %d", rangeIndex, v)
 			}
 			rangeIndex++
-			if keys[i] != k {
-				t.Errorf("Expected key %q at #%d, got %q", keys[i], i, k)
+			if keys[v] != k {
+				t.Errorf("Expected key %q at #%d, got %q", keys[v], v, k)
 			}
 			return true
 		}
 	}
 
 	size := 1000
-	var om ordered.Map
+	var om ordered.Map[string, int]
 
 	keys := make([]string, size)
 	for i := 0; i < size; i++ {
@@ -160,15 +138,15 @@ func TestRange(t *testing.T) {
 }
 
 func TestDeleteOverRange(t *testing.T) {
-	var om ordered.Map
+	var om ordered.Map[int, any]
 	numKeys := 10
 	for i := 0; i < numKeys; i++ {
 		om.Store(i, nil)
 	}
 
-	keyFuncCounter := func(counter *int) func(k, v interface{}) bool {
+	keyFuncCounter := func(counter *int) func(k int, v any) bool {
 		*counter = 0
-		return func(k, v interface{}) bool {
+		return func(k int, v any) bool {
 			*counter++
 			om.Delete(k)
 			return true
@@ -195,33 +173,31 @@ var sizes = []int{10, 100, 1000}
 
 // builtin is a simple wrapper around builtin map to satisify Interface.
 type builtin struct {
-	m map[interface{}]interface{}
+	m map[string]string
 }
-
-var _ ordered.Interface = (*builtin)(nil)
 
 func newMap() *builtin {
 	return &builtin{
-		m: make(map[interface{}]interface{}),
+		m: make(map[string]string),
 	}
 }
 
-func (m *builtin) Delete(key interface{}) {
+func (m *builtin) Delete(key string) {
 	delete(m.m, key)
 }
 
-func (m *builtin) Load(key interface{}) (value interface{}, ok bool) {
+func (m *builtin) Load(key string) (value string, ok bool) {
 	value, ok = m.m[key]
 	return
 }
 
-func (m *builtin) LoadAndDelete(key interface{}) (value interface{}, ok bool) {
+func (m *builtin) LoadAndDelete(key string) (value string, ok bool) {
 	value, ok = m.m[key]
 	delete(m.m, key)
 	return
 }
 
-func (m *builtin) LoadOrStore(key, value interface{}) (actual interface{}, loaded bool) {
+func (m *builtin) LoadOrStore(key, value string) (actual string, loaded bool) {
 	if v, ok := m.m[key]; ok {
 		return v, true
 	}
@@ -229,7 +205,7 @@ func (m *builtin) LoadOrStore(key, value interface{}) (actual interface{}, loade
 	return value, false
 }
 
-func (m *builtin) Range(f func(key, value interface{}) bool) {
+func (m *builtin) Range(f func(key, value string) bool) {
 	for key, value := range m.m {
 		if !f(key, value) {
 			break
@@ -237,13 +213,13 @@ func (m *builtin) Range(f func(key, value interface{}) bool) {
 	}
 }
 
-func (m *builtin) Store(key, value interface{}) {
+func (m *builtin) Store(key, value string) {
 	m.m[key] = value
 }
 
 func BenchmarkMap(b *testing.B) {
 	var sm sync.Map
-	var om ordered.Map
+	var om ordered.Map[string, string]
 	m := newMap()
 
 	key1 := "key1"
@@ -253,250 +229,181 @@ func BenchmarkMap(b *testing.B) {
 	value2 := "value2"
 	key3 := "key3"
 
-	b.Run(
-		"DeleteEmpty",
-		func(b *testing.B) {
-			b.Run(
-				"builtin",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						m.Delete(key1)
-					}
-				},
-			)
-			b.Run(
-				"sync",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						sm.Delete(key1)
-					}
-				},
-			)
-			b.Run(
-				"ordered",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						om.Delete(key1)
-					}
-				},
-			)
-		},
-	)
+	b.Run("DeleteEmpty", func(b *testing.B) {
+		b.Run("builtin", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				m.Delete(key1)
+			}
+		})
+		b.Run("sync", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				sm.Delete(key1)
+			}
+		})
+		b.Run("ordered", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				om.Delete(key1)
+			}
+		})
+	})
 
-	b.Run(
-		"LoadEmpty",
-		func(b *testing.B) {
-			b.Run(
-				"builtin",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						m.Load(key1)
-					}
-				},
-			)
-			b.Run(
-				"sync",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						sm.Load(key1)
-					}
-				},
-			)
-			b.Run(
-				"ordered",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						om.Load(key1)
-					}
-				},
-			)
-		},
-	)
+	b.Run("LoadEmpty", func(b *testing.B) {
+		b.Run("builtin", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				m.Load(key1)
+			}
+		})
+		b.Run("sync", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				sm.Load(key1)
+			}
+		})
+		b.Run("ordered", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				om.Load(key1)
+			}
+		})
+	})
 
-	b.Run(
-		"Store1",
-		func(b *testing.B) {
-			b.Run(
-				"builtin",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						m.Store(key1, value1)
-					}
-				},
-			)
-			b.Run(
-				"sync",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						sm.Store(key1, value1)
-					}
-				},
-			)
-			b.Run(
-				"ordered",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						om.Store(key1, value1)
-					}
-				},
-			)
-		},
-	)
+	b.Run("Store1", func(b *testing.B) {
+		b.Run("builtin", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				m.Store(key1, value1)
+			}
+		})
+		b.Run("sync", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				sm.Store(key1, value1)
+			}
+		})
+		b.Run("ordered", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				om.Store(key1, value1)
+			}
+		})
+	})
 
-	b.Run(
-		"Store2",
-		func(b *testing.B) {
-			b.Run(
-				"builtin",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						m.Store(key2, value2)
-					}
-				},
-			)
-			b.Run(
-				"sync",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						sm.Store(key2, value2)
-					}
-				},
-			)
-			b.Run(
-				"ordered",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						om.Store(key2, value2)
-					}
-				},
-			)
-		},
-	)
+	b.Run("Store2", func(b *testing.B) {
+		b.Run("builtin", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				m.Store(key2, value2)
+			}
+		})
+		b.Run("sync", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				sm.Store(key2, value2)
+			}
+		})
+		b.Run("ordered", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				om.Store(key2, value2)
+			}
+		})
+	})
 
-	b.Run(
-		"Update1",
-		func(b *testing.B) {
-			b.Run(
-				"builtin",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						m.Store(key1, value1b)
-					}
-				},
-			)
-			b.Run(
-				"sync",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						sm.Store(key1, value1b)
-					}
-				},
-			)
-			b.Run(
-				"ordered",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						om.Store(key1, value1b)
-					}
-				},
-			)
-		},
-	)
+	b.Run("Update1", func(b *testing.B) {
+		b.Run("builtin", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				m.Store(key1, value1b)
+			}
+		})
+		b.Run("sync", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				sm.Store(key1, value1b)
+			}
+		})
+		b.Run("ordered", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				om.Store(key1, value1b)
+			}
+		})
+	})
 
-	b.Run(
-		"Load1",
-		func(b *testing.B) {
-			b.Run(
-				"builtin",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						m.Load(key1)
-					}
-				},
-			)
-			b.Run(
-				"sync",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						sm.Load(key1)
-					}
-				},
-			)
-			b.Run(
-				"ordered",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						om.Load(key1)
-					}
-				},
-			)
-		},
-	)
+	b.Run("Load1", func(b *testing.B) {
+		b.Run("builtin", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				m.Load(key1)
+			}
+		})
+		b.Run("sync", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				sm.Load(key1)
+			}
+		})
+		b.Run("ordered", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				om.Load(key1)
+			}
+		})
+	})
 
-	b.Run(
-		"Load3",
-		func(b *testing.B) {
-			b.Run(
-				"builtin",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						m.Load(key3)
-					}
-				},
-			)
-			b.Run(
-				"sync",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						sm.Load(key3)
-					}
-				},
-			)
-			b.Run(
-				"ordered",
-				func(b *testing.B) {
-					for i := 0; i < b.N; i++ {
-						om.Load(key3)
-					}
-				},
-			)
-		},
-	)
+	b.Run("Load3", func(b *testing.B) {
+		b.Run("builtin", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				m.Load(key3)
+			}
+		})
+		b.Run("sync", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				sm.Load(key3)
+			}
+		})
+		b.Run("ordered", func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				om.Load(key3)
+			}
+		})
+	})
 }
 
 func BenchmarkLoadOrStoreStore(b *testing.B) {
 	key := "key"
 	value := "value"
 
-	b.Run(
-		"builtin",
-		func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				m := newMap()
-				m.LoadOrStore(key, value)
-			}
-		},
-	)
+	b.Run("builtin", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			m := newMap()
+			m.LoadOrStore(key, value)
+		}
+	})
 
-	b.Run(
-		"sync",
-		func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				var m sync.Map
-				m.LoadOrStore(key, value)
-			}
-		},
-	)
+	b.Run("sync", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			var m sync.Map
+			m.LoadOrStore(key, value)
+		}
+	})
 
-	b.Run(
-		"ordered",
-		func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				var m ordered.Map
-				m.LoadOrStore(key, value)
-			}
-		},
-	)
+	b.Run("ordered", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			var m ordered.Map[string, string]
+			m.LoadOrStore(key, value)
+		}
+	})
 }
 
 func BenchmarkLoadOrStoreLoad(b *testing.B) {
@@ -504,82 +411,70 @@ func BenchmarkLoadOrStoreLoad(b *testing.B) {
 	value1 := "value1"
 	value2 := "value2"
 
-	b.Run(
-		"builtin",
-		func(b *testing.B) {
-			m := newMap()
-			m.LoadOrStore(key, value1)
-			b.ResetTimer()
-			for i := 0; i < b.N; i++ {
-				m.LoadOrStore(key, value2)
-			}
-		},
-	)
+	b.Run("builtin", func(b *testing.B) {
+		b.ReportAllocs()
+		m := newMap()
+		m.LoadOrStore(key, value1)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			m.LoadOrStore(key, value2)
+		}
+	})
 
-	b.Run(
-		"sync",
-		func(b *testing.B) {
-			var m sync.Map
-			m.LoadOrStore(key, value1)
-			b.ResetTimer()
-			for i := 0; i < b.N; i++ {
-				m.LoadOrStore(key, value2)
-			}
-		},
-	)
+	b.Run("sync", func(b *testing.B) {
+		b.ReportAllocs()
+		var m sync.Map
+		m.LoadOrStore(key, value1)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			m.LoadOrStore(key, value2)
+		}
+	})
 
-	b.Run(
-		"ordered",
-		func(b *testing.B) {
-			var m ordered.Map
-			m.LoadOrStore(key, value1)
-			b.ResetTimer()
-			for i := 0; i < b.N; i++ {
-				m.LoadOrStore(key, value2)
-			}
-		},
-	)
+	b.Run("ordered", func(b *testing.B) {
+		b.ReportAllocs()
+		var m ordered.Map[string, string]
+		m.LoadOrStore(key, value1)
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			m.LoadOrStore(key, value2)
+		}
+	})
 }
 
 func BenchmarkStoreThenDelete(b *testing.B) {
 	key := "key"
 	value := "value"
 
-	b.Run(
-		"builtin",
-		func(b *testing.B) {
-			m := newMap()
-			b.ResetTimer()
-			for i := 0; i < b.N; i++ {
-				m.Store(key, value)
-				m.Delete(key)
-			}
-		},
-	)
+	b.Run("builtin", func(b *testing.B) {
+		b.ReportAllocs()
+		m := newMap()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			m.Store(key, value)
+			m.Delete(key)
+		}
+	})
 
-	b.Run(
-		"sync",
-		func(b *testing.B) {
-			var m sync.Map
-			b.ResetTimer()
-			for i := 0; i < b.N; i++ {
-				m.Store(key, value)
-				m.Delete(key)
-			}
-		},
-	)
+	b.Run("sync", func(b *testing.B) {
+		b.ReportAllocs()
+		var m sync.Map
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			m.Store(key, value)
+			m.Delete(key)
+		}
+	})
 
-	b.Run(
-		"ordered",
-		func(b *testing.B) {
-			var m ordered.Map
-			b.ResetTimer()
-			for i := 0; i < b.N; i++ {
-				m.Store(key, value)
-				m.Delete(key)
-			}
-		},
-	)
+	b.Run("ordered", func(b *testing.B) {
+		b.ReportAllocs()
+		var m ordered.Map[string, string]
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			m.Store(key, value)
+			m.Delete(key)
+		}
+	})
 }
 
 func BenchmarkRange(b *testing.B) {
@@ -593,53 +488,47 @@ func BenchmarkRange(b *testing.B) {
 		}
 		return hex.EncodeToString(p)
 	}
-	rangeFunc := func(k, v interface{}) bool {
+	rangeFunc := func(k, v any) bool {
+		return true
+	}
+	rangeFuncTyped := func(k, v string) bool {
 		return true
 	}
 
 	for _, size := range sizes {
-		b.Run(
-			fmt.Sprintf("%d", size),
-			func(b *testing.B) {
-				var sm sync.Map
-				var om ordered.Map
-				m := newMap()
+		b.Run(fmt.Sprintf("%d", size), func(b *testing.B) {
+			var sm sync.Map
+			var om ordered.Map[string, string]
+			m := newMap()
 
-				keys := make([]string, size)
-				for i := 0; i < size; i++ {
-					keys[i] = generateKey(b)
-					m.Store(keys[i], i)
-					sm.Store(keys[i], i)
-					om.Store(keys[i], i)
+			keys := make([]string, size)
+			for i := 0; i < size; i++ {
+				keys[i] = generateKey(b)
+				m.Store(keys[i], keys[i])
+				sm.Store(keys[i], keys[i])
+				om.Store(keys[i], keys[i])
+			}
+
+			b.Run("builtin", func(b *testing.B) {
+				b.ReportAllocs()
+				for i := 0; i < b.N; i++ {
+					m.Range(rangeFuncTyped)
 				}
+			})
 
-				b.Run(
-					"builtin",
-					func(b *testing.B) {
-						for i := 0; i < b.N; i++ {
-							m.Range(rangeFunc)
-						}
-					},
-				)
+			b.Run("sync", func(b *testing.B) {
+				b.ReportAllocs()
+				for i := 0; i < b.N; i++ {
+					sm.Range(rangeFunc)
+				}
+			})
 
-				b.Run(
-					"sync",
-					func(b *testing.B) {
-						for i := 0; i < b.N; i++ {
-							sm.Range(rangeFunc)
-						}
-					},
-				)
-
-				b.Run(
-					"ordered",
-					func(b *testing.B) {
-						for i := 0; i < b.N; i++ {
-							om.Range(rangeFunc)
-						}
-					},
-				)
-			},
-		)
+			b.Run("ordered", func(b *testing.B) {
+				b.ReportAllocs()
+				for i := 0; i < b.N; i++ {
+					om.Range(rangeFuncTyped)
+				}
+			})
+		})
 	}
 }

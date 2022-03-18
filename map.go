@@ -6,9 +6,9 @@ import (
 )
 
 // pair defines the type that's actually stored in the underlying linked list.
-type pair struct {
-	Key   interface{}
-	Value interface{}
+type pair[K comparable, V any] struct {
+	key   K
+	value V
 }
 
 // Map represents an ordered map.
@@ -17,17 +17,17 @@ type pair struct {
 //
 // Underlying it's wrapping a sync.Map with a doubly linked list.
 //
-// The interface is intentionally kept the same with sync.Map to be used
+// The interface is intentionally kept almost the same with sync.Map to be used
 // interchangeably.
 //
 // The zero value is an empty map ready to use.
 // A map must not be copied after first use.
-type Map struct {
+type Map[K comparable, V any] struct {
 	l list.List
 	m sync.Map
 }
 
-func (m *Map) getElement(key interface{}) *list.Element {
+func (m *Map[K, V]) getElement(key K) *list.Element {
 	element, ok := m.m.Load(key)
 	if !ok {
 		return nil
@@ -36,10 +36,11 @@ func (m *Map) getElement(key interface{}) *list.Element {
 }
 
 // Store stores the key value pair into the map.
-//
-// key must be hashable.
-func (m *Map) Store(key, value interface{}) {
-	kv := &pair{key, value}
+func (m *Map[K, V]) Store(key K, value V) {
+	kv := &pair[K, V]{
+		key:   key,
+		value: value,
+	}
 	element := m.getElement(key)
 	if element != nil {
 		// update existing value.
@@ -53,22 +54,18 @@ func (m *Map) Store(key, value interface{}) {
 
 // Load loads key from the map.
 //
-// key must be hashable.
-//
 // The ok result indicates whether the value is found in the map.
-func (m *Map) Load(key interface{}) (value interface{}, ok bool) {
+func (m *Map[K, V]) Load(key K) (value V, ok bool) {
 	element := m.getElement(key)
 	if element == nil {
-		return nil, false
+		return
 	}
-	kv := element.Value.(*pair)
-	return kv.Value, true
+	kv := element.Value.(*pair[K, V])
+	return kv.value, true
 }
 
 // Delete deletes key from the map.
-//
-// key must be hashable.
-func (m *Map) Delete(key interface{}) {
+func (m *Map[K, V]) Delete(key K) {
 	value, loaded := m.m.LoadAndDelete(key)
 	if !loaded {
 		return
@@ -79,28 +76,30 @@ func (m *Map) Delete(key interface{}) {
 // LoadAndDelete deletes the value for a key,
 // returning the previous value if any.
 // The loaded result reports whether the key was present.
-func (m *Map) LoadAndDelete(key interface{}) (value interface{}, loaded bool) {
-	value, loaded = m.m.LoadAndDelete(key)
+func (m *Map[K, V]) LoadAndDelete(key K) (value V, loaded bool) {
+	var v any
+	v, loaded = m.m.LoadAndDelete(key)
 	if !loaded {
 		return
 	}
-	element := value.(*list.Element)
+	element := v.(*list.Element)
 	m.l.Remove(element)
-	return element.Value.(*pair).Value, true
+	return element.Value.(*pair[K, V]).value, true
 }
 
 // LoadOrStore returns the existing value for the key if present.
 // Otherwise, it stores and returns the given value.
 // The loaded result is true if the value was loaded, false if stored.
-//
-// key must be hashable.
-func (m *Map) LoadOrStore(key, value interface{}) (actual interface{}, loaded bool) {
+func (m *Map[K, V]) LoadOrStore(key K, value V) (actual V, loaded bool) {
 	element := m.getElement(key)
 	if element != nil {
-		kv := element.Value.(*pair)
-		return kv.Value, true
+		kv := element.Value.(*pair[K, V])
+		return kv.value, true
 	}
-	kv := &pair{key, value}
+	kv := &pair[K, V]{
+		key:   key,
+		value: value,
+	}
 	element = m.l.PushBack(kv)
 	m.m.Store(key, element)
 	return value, false
@@ -110,13 +109,13 @@ func (m *Map) LoadOrStore(key, value interface{}) (actual interface{}, loaded bo
 // If f returns false, range stops the iteration.
 //
 // The order of the iteration preserves the original insertion order.
-func (m *Map) Range(f func(key, value interface{}) bool) {
+func (m *Map[K, V]) Range(f func(key K, value V) bool) {
 	for e := m.l.Front(); e != nil; {
-		kv := e.Value.(*pair)
+		kv := e.Value.(*pair[K, V])
 		// Do it here instead of in for line to handle the special case of caller
 		// deleting the key in f
 		e = e.Next()
-		if !f(kv.Key, kv.Value) {
+		if !f(kv.key, kv.value) {
 			break
 		}
 	}
