@@ -23,85 +23,89 @@ type pair[K comparable, V any] struct {
 // The zero value is an empty map ready to use.
 // A map must not be copied after first use.
 type Map[K comparable, V any] struct {
-	l list.List
-	m sync.Map
-}
+	lock sync.RWMutex
 
-func (m *Map[K, V]) getElement(key K) *list.Element {
-	element, ok := m.m.Load(key)
-	if !ok {
-		return nil
-	}
-	return element.(*list.Element)
+	l list.List
+	m map[K]*list.Element
 }
 
 // Store stores the key value pair into the map.
 func (m *Map[K, V]) Store(key K, value V) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
 	kv := &pair[K, V]{
 		key:   key,
 		value: value,
 	}
-	element := m.getElement(key)
-	if element != nil {
+
+	if element := m.m[key]; element != nil {
 		// update existing value.
 		element.Value = kv
 		return
 	}
+
 	// insert new key-value pair to the back of the list.
-	element = m.l.PushBack(kv)
-	m.m.Store(key, element)
+	element := m.l.PushBack(kv)
+	if m.m == nil {
+		m.m = make(map[K]*list.Element)
+	}
+	m.m[key] = element
 }
 
 // Load loads key from the map.
 //
 // The ok result indicates whether the value is found in the map.
 func (m *Map[K, V]) Load(key K) (value V, ok bool) {
-	element := m.getElement(key)
-	if element == nil {
-		return
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
+	if element := m.m[key]; element != nil {
+		return element.Value.(*pair[K, V]).value, true
 	}
-	kv := element.Value.(*pair[K, V])
-	return kv.value, true
+	return
 }
 
 // Delete deletes key from the map.
 func (m *Map[K, V]) Delete(key K) {
-	value, loaded := m.m.LoadAndDelete(key)
-	if !loaded {
-		return
-	}
-	m.l.Remove(value.(*list.Element))
+	m.LoadAndDelete(key)
 }
 
 // LoadAndDelete deletes the value for a key,
 // returning the previous value if any.
 // The loaded result reports whether the key was present.
 func (m *Map[K, V]) LoadAndDelete(key K) (value V, loaded bool) {
-	var v any
-	v, loaded = m.m.LoadAndDelete(key)
-	if !loaded {
-		return
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	if element := m.m[key]; element != nil {
+		delete(m.m, key)
+		m.l.Remove(element)
+		return element.Value.(*pair[K, V]).value, true
 	}
-	element := v.(*list.Element)
-	m.l.Remove(element)
-	return element.Value.(*pair[K, V]).value, true
+	return
 }
 
 // LoadOrStore returns the existing value for the key if present.
 // Otherwise, it stores and returns the given value.
 // The loaded result is true if the value was loaded, false if stored.
 func (m *Map[K, V]) LoadOrStore(key K, value V) (actual V, loaded bool) {
-	element := m.getElement(key)
-	if element != nil {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	if element := m.m[key]; element != nil {
 		kv := element.Value.(*pair[K, V])
 		return kv.value, true
 	}
-	kv := &pair[K, V]{
+
+	element := m.l.PushBack(&pair[K, V]{
 		key:   key,
 		value: value,
+	})
+	if m.m == nil {
+		m.m = make(map[K]*list.Element)
 	}
-	element = m.l.PushBack(kv)
-	m.m.Store(key, element)
+	m.m[key] = element
 	return value, false
 }
 
@@ -110,12 +114,20 @@ func (m *Map[K, V]) LoadOrStore(key K, value V) (actual V, loaded bool) {
 //
 // The order of the iteration preserves the original insertion order.
 func (m *Map[K, V]) Range(f func(key K, value V) bool) {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
 	for e := m.l.Front(); e != nil; {
 		kv := e.Value.(*pair[K, V])
 		// Do it here instead of in for line to handle the special case of caller
 		// deleting the key in f
 		e = e.Next()
-		if !f(kv.key, kv.value) {
+
+		m.lock.RUnlock()
+		cont := f(kv.key, kv.value)
+		m.lock.RLock()
+
+		if !cont {
 			break
 		}
 	}

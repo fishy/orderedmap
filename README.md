@@ -6,10 +6,10 @@
 An implementation of ordered map in Go.
 An ordered map preserves the original insertion order when iterating.
 
-It's implemented by wrapping a [`sync.Map`](https://pkg.go.dev/sync#Map)
-and a [doubly linked list](https://pkg.go.dev/container/list#List).
+It's implemented by wrapping a map and a
+[doubly linked list](https://pkg.go.dev/container/list#List).
 The interface is intentionally kept the same with `sync.Map` to be used
-interchangeably.
+interchangeably (except with added generics support).
 
 ## Benchmark
 
@@ -22,51 +22,51 @@ goos: linux
 goarch: amd64
 pkg: go.yhsif.com/orderedmap
 cpu: Intel(R) Core(TM) i5-7260U CPU @ 2.20GHz
-BenchmarkMap/DeleteEmpty/builtin-4              577244734                2.078 ns/op           0 B/op          0 allocs/op
-BenchmarkMap/DeleteEmpty/sync-4                 100000000               11.73 ns/op            0 B/op          0 allocs/op
-BenchmarkMap/DeleteEmpty/ordered-4              83530353                13.54 ns/op            0 B/op          0 allocs/op
-BenchmarkMap/LoadEmpty/builtin-4                540074115                2.220 ns/op           0 B/op          0 allocs/op
-BenchmarkMap/LoadEmpty/sync-4                   100000000               12.04 ns/op            0 B/op          0 allocs/op
-BenchmarkMap/LoadEmpty/ordered-4                79147016                14.94 ns/op            0 B/op          0 allocs/op
+BenchmarkMap/DeleteEmpty/builtin-4              577845259                2.074 ns/op           0 B/op          0 allocs/op
+BenchmarkMap/DeleteEmpty/sync-4                 202597698                5.933 ns/op           0 B/op          0 allocs/op
+BenchmarkMap/DeleteEmpty/ordered-4              20556426                58.21 ns/op            0 B/op          0 allocs/op
+BenchmarkMap/LoadEmpty/builtin-4                540843502                2.219 ns/op           0 B/op          0 allocs/op
+BenchmarkMap/LoadEmpty/sync-4                   202360122                5.920 ns/op           0 B/op          0 allocs/op
+BenchmarkMap/LoadEmpty/ordered-4                26017804                46.28 ns/op            0 B/op          0 allocs/op
 BenchmarkMap/Store1/builtin-4                   100000000               10.48 ns/op            0 B/op          0 allocs/op
-BenchmarkMap/Store1/sync-4                       8478454               143.3 ns/op            48 B/op          3 allocs/op
-BenchmarkMap/Store1/ordered-4                   16938922                69.60 ns/op           32 B/op          1 allocs/op
-BenchmarkMap/Store2/builtin-4                   100000000               11.29 ns/op            0 B/op          0 allocs/op
-BenchmarkMap/Store2/sync-4                       8290592               142.4 ns/op            48 B/op          3 allocs/op
-BenchmarkMap/Store2/ordered-4                   16879738                69.88 ns/op           32 B/op          1 allocs/op
-BenchmarkMap/Update1/builtin-4                  100000000               10.48 ns/op            0 B/op          0 allocs/op
-BenchmarkMap/Update1/sync-4                      8209876               144.8 ns/op            48 B/op          3 allocs/op
-BenchmarkMap/Update1/ordered-4                  17162760                68.94 ns/op           32 B/op          1 allocs/op
-BenchmarkMap/Load1/builtin-4                    276140088                4.145 ns/op           0 B/op          0 allocs/op
-BenchmarkMap/Load1/sync-4                       49011340                23.15 ns/op            0 B/op          0 allocs/op
-BenchmarkMap/Load1/ordered-4                    38655788                31.23 ns/op            0 B/op          0 allocs/op
-BenchmarkMap/Load3/builtin-4                    98014983                12.84 ns/op            0 B/op          0 allocs/op
-BenchmarkMap/Load3/sync-4                       70591510                16.10 ns/op            0 B/op          0 allocs/op
-BenchmarkMap/Load3/ordered-4                    54961591                21.47 ns/op            0 B/op          0 allocs/op
-BenchmarkLoadOrStoreStore/builtin-4             57805004                21.63 ns/op            0 B/op          0 allocs/op
-BenchmarkLoadOrStoreStore/sync-4                 2946840               407.2 ns/op           376 B/op          8 allocs/op
-BenchmarkLoadOrStoreStore/ordered-4              2284989               523.0 ns/op           504 B/op         10 allocs/op
-BenchmarkLoadOrStoreLoad/builtin-4              279418766                4.450 ns/op           0 B/op          0 allocs/op
-BenchmarkLoadOrStoreLoad/sync-4                 14499127                81.00 ns/op           32 B/op          2 allocs/op
-BenchmarkLoadOrStoreLoad/ordered-4              39903387                30.23 ns/op            0 B/op          0 allocs/op
-BenchmarkStoreThenDelete/builtin-4              39218394                28.86 ns/op            0 B/op          0 allocs/op
-BenchmarkStoreThenDelete/sync-4                  2178794               552.1 ns/op           360 B/op          9 allocs/op
-BenchmarkStoreThenDelete/ordered-4               1907264               631.5 ns/op           424 B/op         10 allocs/op
-BenchmarkRange/10/builtin-4                      9251668               136.9 ns/op             0 B/op          0 allocs/op
-BenchmarkRange/10/sync-4                         7960039               158.0 ns/op             0 B/op          0 allocs/op
-BenchmarkRange/10/ordered-4                     40579003                29.55 ns/op            0 B/op          0 allocs/op
-BenchmarkRange/100/builtin-4                      986728              1263 ns/op               0 B/op          0 allocs/op
-BenchmarkRange/100/sync-4                         898848              1332 ns/op               0 B/op          0 allocs/op
-BenchmarkRange/100/ordered-4                     4099268               309.9 ns/op             0 B/op          0 allocs/op
-BenchmarkRange/1000/builtin-4                      85122             14102 ns/op               0 B/op          0 allocs/op
-BenchmarkRange/1000/sync-4                         81168             14773 ns/op               0 B/op          0 allocs/op
-BenchmarkRange/1000/ordered-4                     377306              3009 ns/op               0 B/op          0 allocs/op
+BenchmarkMap/Store1/sync-4                       6121250               196.4 ns/op            48 B/op          3 allocs/op
+BenchmarkMap/Store1/ordered-4                   12191223                97.90 ns/op           32 B/op          1 allocs/op
+BenchmarkMap/Store2/builtin-4                   100000000               11.28 ns/op            0 B/op          0 allocs/op
+BenchmarkMap/Store2/sync-4                       6063440               197.1 ns/op            48 B/op          3 allocs/op
+BenchmarkMap/Store2/ordered-4                   11598100               102.0 ns/op            32 B/op          1 allocs/op
+BenchmarkMap/Update1/builtin-4                  100000000               10.46 ns/op            0 B/op          0 allocs/op
+BenchmarkMap/Update1/sync-4                      6090291               196.7 ns/op            48 B/op          3 allocs/op
+BenchmarkMap/Update1/ordered-4                  12118083                98.08 ns/op           32 B/op          1 allocs/op
+BenchmarkMap/Load1/builtin-4                    289113676                4.144 ns/op           0 B/op          0 allocs/op
+BenchmarkMap/Load1/sync-4                       100000000               11.25 ns/op            0 B/op          0 allocs/op
+BenchmarkMap/Load1/ordered-4                    26038620                46.19 ns/op            0 B/op          0 allocs/op
+BenchmarkMap/Load3/builtin-4                    90047526                12.65 ns/op            0 B/op          0 allocs/op
+BenchmarkMap/Load3/sync-4                       149176874                8.037 ns/op           0 B/op          0 allocs/op
+BenchmarkMap/Load3/ordered-4                    26861779                44.67 ns/op            0 B/op          0 allocs/op
+BenchmarkLoadOrStoreStore/builtin-4             49824517                20.92 ns/op            0 B/op          0 allocs/op
+BenchmarkLoadOrStoreStore/sync-4                 4937766               244.9 ns/op           376 B/op          8 allocs/op
+BenchmarkLoadOrStoreStore/ordered-4              6684468               177.8 ns/op           416 B/op          5 allocs/op
+BenchmarkLoadOrStoreLoad/builtin-4              279954810                4.291 ns/op           0 B/op          0 allocs/op
+BenchmarkLoadOrStoreLoad/sync-4                 23575126                51.09 ns/op           32 B/op          2 allocs/op
+BenchmarkLoadOrStoreLoad/ordered-4              19255971                62.83 ns/op            0 B/op          0 allocs/op
+BenchmarkStoreThenDelete/builtin-4              40588748                28.97 ns/op            0 B/op          0 allocs/op
+BenchmarkStoreThenDelete/sync-4                  1878607               633.8 ns/op           357 B/op          8 allocs/op
+BenchmarkStoreThenDelete/ordered-4               4875866               244.9 ns/op            79 B/op          1 allocs/op
+BenchmarkRange/10/builtin-4                      8666966               138.3 ns/op             0 B/op          0 allocs/op
+BenchmarkRange/10/sync-4                        18859324                62.89 ns/op            0 B/op          0 allocs/op
+BenchmarkRange/10/ordered-4                      2830831               423.8 ns/op             0 B/op          0 allocs/op
+BenchmarkRange/100/builtin-4                      934752              1276 ns/op               0 B/op          0 allocs/op
+BenchmarkRange/100/sync-4                        2148686               560.0 ns/op             0 B/op          0 allocs/op
+BenchmarkRange/100/ordered-4                      328244              3674 ns/op               0 B/op          0 allocs/op
+BenchmarkRange/1000/builtin-4                      83199             14432 ns/op               0 B/op          0 allocs/op
+BenchmarkRange/1000/sync-4                        183529              6375 ns/op               0 B/op          0 allocs/op
+BenchmarkRange/1000/ordered-4                      33486             35836 ns/op               0 B/op          0 allocs/op
 PASS
-ok      go.yhsif.com/orderedmap 51.768s
+ok      go.yhsif.com/orderedmap 53.852s
 ```
 
-As you can see, all operations except `Range` are on-par or only slightly slower
-than `sync.Map`, while `Range` is a lot faster.
+Note that for the benchmark tests,
+`sync` and `ordered` are parallel benchmarks while `builtin` are sequential.
 
 ## License
 

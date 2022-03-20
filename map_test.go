@@ -238,15 +238,19 @@ func BenchmarkMap(b *testing.B) {
 		})
 		b.Run("sync", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				sm.Delete(key1)
-			}
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					sm.Delete(key1)
+				}
+			})
 		})
 		b.Run("ordered", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				om.Delete(key1)
-			}
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					om.Delete(key1)
+				}
+			})
 		})
 	})
 
@@ -259,15 +263,19 @@ func BenchmarkMap(b *testing.B) {
 		})
 		b.Run("sync", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				sm.Load(key1)
-			}
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					sm.Load(key1)
+				}
+			})
 		})
 		b.Run("ordered", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				om.Load(key1)
-			}
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					om.Load(key1)
+				}
+			})
 		})
 	})
 
@@ -280,15 +288,19 @@ func BenchmarkMap(b *testing.B) {
 		})
 		b.Run("sync", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				sm.Store(key1, value1)
-			}
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					sm.Store(key1, value1)
+				}
+			})
 		})
 		b.Run("ordered", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				om.Store(key1, value1)
-			}
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					om.Store(key1, value1)
+				}
+			})
 		})
 	})
 
@@ -301,15 +313,19 @@ func BenchmarkMap(b *testing.B) {
 		})
 		b.Run("sync", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				sm.Store(key2, value2)
-			}
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					sm.Store(key2, value2)
+				}
+			})
 		})
 		b.Run("ordered", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				om.Store(key2, value2)
-			}
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					om.Store(key2, value2)
+				}
+			})
 		})
 	})
 
@@ -322,15 +338,19 @@ func BenchmarkMap(b *testing.B) {
 		})
 		b.Run("sync", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				sm.Store(key1, value1b)
-			}
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					sm.Store(key1, value1b)
+				}
+			})
 		})
 		b.Run("ordered", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				om.Store(key1, value1b)
-			}
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					om.Store(key1, value1b)
+				}
+			})
 		})
 	})
 
@@ -343,15 +363,19 @@ func BenchmarkMap(b *testing.B) {
 		})
 		b.Run("sync", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				sm.Load(key1)
-			}
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					sm.Load(key1)
+				}
+			})
 		})
 		b.Run("ordered", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				om.Load(key1)
-			}
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					om.Load(key1)
+				}
+			})
 		})
 	})
 
@@ -364,15 +388,19 @@ func BenchmarkMap(b *testing.B) {
 		})
 		b.Run("sync", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				sm.Load(key3)
-			}
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					sm.Load(key3)
+				}
+			})
 		})
 		b.Run("ordered", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				om.Load(key3)
-			}
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					om.Load(key3)
+				}
+			})
 		})
 	})
 }
@@ -391,18 +419,22 @@ func BenchmarkLoadOrStoreStore(b *testing.B) {
 
 	b.Run("sync", func(b *testing.B) {
 		b.ReportAllocs()
-		for i := 0; i < b.N; i++ {
-			var m sync.Map
-			m.LoadOrStore(key, value)
-		}
+		b.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				var m sync.Map
+				m.LoadOrStore(key, value)
+			}
+		})
 	})
 
 	b.Run("ordered", func(b *testing.B) {
 		b.ReportAllocs()
-		for i := 0; i < b.N; i++ {
-			var m ordered.Map[string, string]
-			m.LoadOrStore(key, value)
-		}
+		b.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				var m ordered.Map[string, string]
+				m.LoadOrStore(key, value)
+			}
+		})
 	})
 }
 
@@ -426,9 +458,11 @@ func BenchmarkLoadOrStoreLoad(b *testing.B) {
 		var m sync.Map
 		m.LoadOrStore(key, value1)
 		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			m.LoadOrStore(key, value2)
-		}
+		b.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				m.LoadOrStore(key, value2)
+			}
+		})
 	})
 
 	b.Run("ordered", func(b *testing.B) {
@@ -436,9 +470,11 @@ func BenchmarkLoadOrStoreLoad(b *testing.B) {
 		var m ordered.Map[string, string]
 		m.LoadOrStore(key, value1)
 		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			m.LoadOrStore(key, value2)
-		}
+		b.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				m.LoadOrStore(key, value2)
+			}
+		})
 	})
 }
 
@@ -460,20 +496,24 @@ func BenchmarkStoreThenDelete(b *testing.B) {
 		b.ReportAllocs()
 		var m sync.Map
 		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			m.Store(key, value)
-			m.Delete(key)
-		}
+		b.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				m.Store(key, value)
+				m.Delete(key)
+			}
+		})
 	})
 
 	b.Run("ordered", func(b *testing.B) {
 		b.ReportAllocs()
 		var m ordered.Map[string, string]
 		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			m.Store(key, value)
-			m.Delete(key)
-		}
+		b.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				m.Store(key, value)
+				m.Delete(key)
+			}
+		})
 	})
 }
 
@@ -518,16 +558,20 @@ func BenchmarkRange(b *testing.B) {
 
 			b.Run("sync", func(b *testing.B) {
 				b.ReportAllocs()
-				for i := 0; i < b.N; i++ {
-					sm.Range(rangeFunc)
-				}
+				b.RunParallel(func(pb *testing.PB) {
+					for pb.Next() {
+						sm.Range(rangeFunc)
+					}
+				})
 			})
 
 			b.Run("ordered", func(b *testing.B) {
 				b.ReportAllocs()
-				for i := 0; i < b.N; i++ {
-					om.Range(rangeFuncTyped)
-				}
+				b.RunParallel(func(pb *testing.PB) {
+					for pb.Next() {
+						om.Range(rangeFuncTyped)
+					}
+				})
 			})
 		})
 	}
