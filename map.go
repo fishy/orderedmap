@@ -132,3 +132,10 @@ func (m *Map[K, V]) Range(f func(key K, value V) bool) {
 		}
 	}
 }
+
+// All returns iter.Seq2[key, value].
+func (m *Map[K, V]) All() func(yield func(K, V) bool) {
+	return func(yield func(key K, value V) bool) {
+		m.Range(yield)
+	}
+}
