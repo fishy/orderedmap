@@ -2,6 +2,7 @@ package orderedmap
 
 import (
 	"container/list"
+	"iter"
 	"sync"
 )
 
@@ -134,7 +135,7 @@ func (m *Map[K, V]) Range(f func(key K, value V) bool) {
 }
 
 // All returns iter.Seq2[key, value].
-func (m *Map[K, V]) All() func(yield func(K, V) bool) {
+func (m *Map[K, V]) All() iter.Seq2[K, V] {
 	return func(yield func(key K, value V) bool) {
 		m.Range(yield)
 	}
