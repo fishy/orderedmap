@@ -130,7 +130,7 @@ func TestRange(t *testing.T) {
 	var om ordered.Map[string, int]
 
 	keys := make([]string, size)
-	for i := 0; i < size; i++ {
+	for i := range size {
 		keys[i] = generateKey(t)
 		om.Store(keys[i], i)
 	}
@@ -141,7 +141,7 @@ func TestRange(t *testing.T) {
 func TestDeleteOverRange(t *testing.T) {
 	var om ordered.Map[int, any]
 	numKeys := 10
-	for i := 0; i < numKeys; i++ {
+	for i := range numKeys {
 		om.Store(i, nil)
 	}
 
@@ -543,7 +543,7 @@ func BenchmarkRange(b *testing.B) {
 			m := newMap()
 
 			keys := make([]string, size)
-			for i := 0; i < size; i++ {
+			for i := range size {
 				keys[i] = generateKey(b)
 				m.Store(keys[i], keys[i])
 				sm.Store(keys[i], keys[i])
@@ -614,7 +614,7 @@ func TestAll(t *testing.T) {
 func TestDeleteOverAll(t *testing.T) {
 	var om ordered.Map[int, any]
 	numKeys := 10
-	for i := 0; i < numKeys; i++ {
+	for i := range numKeys {
 		om.Store(i, nil)
 	}
 
