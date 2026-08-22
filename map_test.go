@@ -233,7 +233,7 @@ func BenchmarkMap(b *testing.B) {
 	b.Run("DeleteEmpty", func(b *testing.B) {
 		b.Run("builtin", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				m.Delete(key1)
 			}
 		})
@@ -258,7 +258,7 @@ func BenchmarkMap(b *testing.B) {
 	b.Run("LoadEmpty", func(b *testing.B) {
 		b.Run("builtin", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				m.Load(key1)
 			}
 		})
@@ -283,7 +283,7 @@ func BenchmarkMap(b *testing.B) {
 	b.Run("Store1", func(b *testing.B) {
 		b.Run("builtin", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				m.Store(key1, value1)
 			}
 		})
@@ -308,7 +308,7 @@ func BenchmarkMap(b *testing.B) {
 	b.Run("Store2", func(b *testing.B) {
 		b.Run("builtin", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				m.Store(key2, value2)
 			}
 		})
@@ -333,7 +333,7 @@ func BenchmarkMap(b *testing.B) {
 	b.Run("Update1", func(b *testing.B) {
 		b.Run("builtin", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				m.Store(key1, value1b)
 			}
 		})
@@ -358,7 +358,7 @@ func BenchmarkMap(b *testing.B) {
 	b.Run("Load1", func(b *testing.B) {
 		b.Run("builtin", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				m.Load(key1)
 			}
 		})
@@ -383,7 +383,7 @@ func BenchmarkMap(b *testing.B) {
 	b.Run("Load3", func(b *testing.B) {
 		b.Run("builtin", func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				m.Load(key3)
 			}
 		})
@@ -412,7 +412,7 @@ func BenchmarkLoadOrStoreStore(b *testing.B) {
 
 	b.Run("builtin", func(b *testing.B) {
 		b.ReportAllocs()
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			m := newMap()
 			m.LoadOrStore(key, value)
 		}
@@ -448,8 +448,7 @@ func BenchmarkLoadOrStoreLoad(b *testing.B) {
 		b.ReportAllocs()
 		m := newMap()
 		m.LoadOrStore(key, value1)
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			m.LoadOrStore(key, value2)
 		}
 	})
@@ -486,8 +485,7 @@ func BenchmarkStoreThenDelete(b *testing.B) {
 	b.Run("builtin", func(b *testing.B) {
 		b.ReportAllocs()
 		m := newMap()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			m.Store(key, value)
 			m.Delete(key)
 		}
@@ -552,7 +550,7 @@ func BenchmarkRange(b *testing.B) {
 
 			b.Run("builtin", func(b *testing.B) {
 				b.ReportAllocs()
-				for i := 0; i < b.N; i++ {
+				for b.Loop() {
 					m.Range(rangeFuncTyped)
 				}
 			})
